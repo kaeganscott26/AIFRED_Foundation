@@ -7,3 +7,8 @@ include(CompilerSettings)
 enable_testing()
 
 add_subdirectory(packages/aifr3d_core)
+
+option(AIFR3D_ENABLE_VST3 "Enable Phase 6 JUCE VST3 wrapper build" OFF)
+if(AIFR3D_ENABLE_VST3)
+  add_subdirectory(plugins/aifr3d_vst3)
+endif()
