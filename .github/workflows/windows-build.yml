@@ -1,0 +1,81 @@
+name: windows-vst3-build
+
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
+jobs:
+  build-vst3:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Resolve version
+        id: version
+        shell: pwsh
+        run: |
+          $version = (Get-Content VERSION -Raw).Trim()
+          if ([string]::IsNullOrWhiteSpace($version)) {
+            throw "VERSION file is empty"
+          }
+          "VERSION=$version" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+          Write-Host "Resolved VERSION=$version"
+
+      - name: Configure (VS2022 x64, VST3 ON)
+        shell: pwsh
+        run: |
+          cmake -S . -B build_win_vst3 -G "Visual Studio 17 2022" -A x64 -DAIFR3D_ENABLE_VST3=ON -DCMAKE_BUILD_TYPE=Release
+
+      - name: Build plugin target
+        shell: pwsh
+        run: |
+          cmake --build build_win_vst3 --config Release --target aifr3d_vst3_VST3 --parallel
+
+      - name: Locate built VST3 bundle
+        id: locate_vst3
+        shell: pwsh
+        run: |
+          $expected = Join-Path $PWD "build_win_vst3\plugins\aifr3d_vst3\aifr3d_vst3_artefacts\Release\VST3\AIFR3D.vst3"
+          if (Test-Path $expected) {
+            $path = (Resolve-Path $expected).Path
+          } else {
+            Write-Host "Expected path missing: $expected"
+            $found = Get-ChildItem -Path (Join-Path $PWD "build_win_vst3") -Filter "AIFR3D.vst3" -Directory -Recurse -ErrorAction SilentlyContinue | Select-Object -First 1
+            if (-not $found) {
+              throw "AIFR3D.vst3 not found in build_win_vst3"
+            }
+            $path = $found.FullName
+          }
+          Write-Host "Found VST3 at: $path"
+          "vst3_path=$path" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
+
+      - name: Package VST3 + README artifact zip
+        id: package
+        shell: pwsh
+        run: |
+          powershell -ExecutionPolicy Bypass -File scripts/package_windows_artifact.ps1 -BuildDir build_win_vst3 -Version $env:VERSION -ReadmePath dist/README_install.md
+          $zip = Join-Path $PWD "dist\windows\out\AIFR3D_v$env:VERSION`_Windows.zip"
+          if (-not (Test-Path $zip)) {
+            throw "Expected artifact zip not found at: $zip"
+          }
+          Write-Host "Created artifact zip: $zip"
+          "zip_path=$zip" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
+
+      - name: Upload artifact zip
+        uses: actions/upload-artifact@v4
+        with:
+          name: AIFR3D_v${{ env.VERSION }}_Windows
+          path: ${{ steps.package.outputs.zip_path }}
+
+      - name: Publish GitHub release asset (tags only)
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: ${{ steps.package.outputs.zip_path }}
