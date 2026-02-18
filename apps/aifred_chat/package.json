@@ -1,0 +1,55 @@
+{
+  "name": "aifred-desktop",
+  "version": "1.0.0",
+  "description": "AIFRED desktop assistant powered by free no-login AI endpoints",
+  "author": "AIFRED Build",
+  "main": "src/main.js",
+  "type": "commonjs",
+  "license": "MIT",
+  "scripts": {
+    "start": "electron .",
+    "check": "node --check src/main.js && node --check src/preload.js && node --check src/renderer/app.js",
+    "test:runtime": "node scripts/runtime_smoke.js",
+    "android:sync": "bash scripts/sync_android_assets.sh",
+    "dist:android": "bash scripts/build_android_apk.sh",
+    "dist:win": "electron-builder --win nsis --x64",
+    "dist:linux": "electron-builder --linux AppImage --x64",
+    "dist:linux:tar": "electron-builder --linux tar.gz --x64"
+  },
+  "devDependencies": {
+    "electron": "^30.5.1",
+    "electron-builder": "^24.13.3",
+    "jsdom": "^26.1.0"
+  },
+  "build": {
+    "appId": "com.aifred.desktop",
+    "productName": "AIFRED Desktop",
+    "artifactName": "${productName}-${version}-${os}-${arch}.${ext}",
+    "asar": true,
+    "files": [
+      "src/**/*",
+      "package.json"
+    ],
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": ["x64"]
+        }
+      ]
+    },
+    "linux": {
+      "target": [
+        {
+          "target": "AppImage",
+          "arch": ["x64"]
+        }
+      ],
+      "category": "Utility"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true
+    }
+  }
+}

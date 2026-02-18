@@ -1,0 +1,187 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AIFRED Desktop</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Exo+2:wght@500;600;700&family=Manrope:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="app-bg" aria-hidden="true"></div>
+
+    <main class="app-shell">
+      <aside class="panel controls">
+        <header class="brand">
+          <img src="./assets/brand_logo.png" alt="AIFRED logo" class="brand-logo" />
+          <div>
+            <p class="eyebrow">AIFRED Neural Console</p>
+            <h1>AIFRED</h1>
+            <p class="sub">Sleek professional assistant powered by free no-login AI endpoints.</p>
+          </div>
+        </header>
+
+        <nav class="main-menus" id="main-menus" aria-label="Main menu">
+          <button class="menu-btn active" data-menu="assistant" type="button">Assistant</button>
+          <button class="menu-btn" data-menu="media" type="button">Media</button>
+          <button class="menu-btn" data-menu="automation" type="button">Automation</button>
+          <button class="menu-btn" data-menu="system" type="button">System</button>
+        </nav>
+
+        <nav class="sub-menus" id="sub-menus" aria-label="Submenu">
+          <button class="submenu-btn active" data-menu="assistant" data-panel="assistant-chat" type="button">Chat Settings</button>
+          <button class="submenu-btn" data-menu="assistant" data-panel="assistant-models" type="button">Models</button>
+
+          <button class="submenu-btn" data-menu="media" data-panel="media-tts" type="button">Speech</button>
+          <button class="submenu-btn" data-menu="media" data-panel="media-image" type="button">Image Generation</button>
+          <button class="submenu-btn" data-menu="media" data-panel="media-vision" type="button">Image Analysis</button>
+
+          <button class="submenu-btn" data-menu="automation" data-panel="automation-tools" type="button">Local Tools</button>
+          <button class="submenu-btn" data-menu="automation" data-panel="automation-trace" type="button">Function Trace</button>
+
+          <button class="submenu-btn" data-menu="system" data-panel="system-status" type="button">Runtime</button>
+        </nav>
+
+        <section class="menu-panel active" id="panel-assistant-chat" data-menu="assistant" data-panel="assistant-chat">
+          <h2>Chat Controls</h2>
+
+          <label class="row switch-row">
+            <input type="checkbox" id="stream" />
+            <span>Stream responses</span>
+          </label>
+
+          <label class="row switch-row">
+            <input type="checkbox" id="tool-calling" checked />
+            <span>Enable tool/function calling</span>
+          </label>
+
+          <label class="row switch-row">
+            <input type="checkbox" id="web-search" />
+            <span>Enable web-search response mode</span>
+          </label>
+
+          <p class="hint">Web-search mode keeps the selected model and uses retrieval-style prompting (no hard model switch).</p>
+
+          <label for="temperature">Temperature (0.0 - 1.0)</label>
+          <input id="temperature" type="number" min="0" max="1" step="0.1" value="0.7" />
+
+          <label for="max-tokens">Max tokens</label>
+          <input id="max-tokens" type="number" min="1" step="1" placeholder="Optional" />
+        </section>
+
+        <section class="menu-panel" id="panel-assistant-models" data-menu="assistant" data-panel="assistant-models">
+          <h2>Model Routing</h2>
+          <label for="chat-model">Chat model</label>
+          <select id="chat-model"></select>
+          <button id="refresh-models" type="button" class="secondary">Refresh model list</button>
+          <p class="hint" id="model-hint">Model details appear here.</p>
+        </section>
+
+        <section class="menu-panel" id="panel-media-tts" data-menu="media" data-panel="media-tts">
+          <h2>Text To Speech</h2>
+          <label for="tts-model">Voice</label>
+          <select id="tts-model"></select>
+          <label for="tts-input">Text</label>
+          <textarea id="tts-input" rows="3" placeholder="Text to convert to speech"></textarea>
+          <button id="tts-btn" type="button" class="secondary">Generate speech</button>
+          <div id="tts-output"></div>
+        </section>
+
+        <section class="menu-panel" id="panel-media-image" data-menu="media" data-panel="media-image">
+          <h2>Image Generation</h2>
+          <label for="image-model">Image model</label>
+          <select id="image-model"></select>
+          <label for="image-prompt">Prompt</label>
+          <textarea id="image-prompt" rows="3" placeholder="Describe your image"></textarea>
+          <button id="image-btn" type="button" class="secondary">Generate image</button>
+        </section>
+
+        <section class="menu-panel" id="panel-media-vision" data-menu="media" data-panel="media-vision">
+          <h2>Image Analysis</h2>
+          <label for="analyze-url">Image URL</label>
+          <input id="analyze-url" type="text" placeholder="https://..." />
+          <label for="analyze-prompt">Question</label>
+          <textarea id="analyze-prompt" rows="3" placeholder="What do you see in this image?"></textarea>
+          <button id="analyze-btn" type="button" class="secondary">Analyze image</button>
+        </section>
+
+        <section class="menu-panel" id="panel-automation-tools" data-menu="automation" data-panel="automation-tools">
+          <h2>Local Tools</h2>
+
+          <label class="row switch-row">
+            <input type="checkbox" id="local-ops" />
+            <span>Allow file/command tools (always prompt)</span>
+          </label>
+
+          <div class="tool-grid">
+            <article class="tool-card">
+              <h3>Read File</h3>
+              <label for="file-read-path">Path</label>
+              <input id="file-read-path" type="text" placeholder="/path/to/file.txt" />
+              <button id="file-read-btn" type="button" class="secondary">Read file</button>
+            </article>
+
+            <article class="tool-card">
+              <h3>Write File</h3>
+              <label for="file-write-path">Path</label>
+              <input id="file-write-path" type="text" placeholder="/path/to/file.txt" />
+              <label for="file-write-content">Content</label>
+              <textarea id="file-write-content" rows="4" placeholder="Text to write"></textarea>
+              <label class="row switch-row compact">
+                <input type="checkbox" id="file-write-append" />
+                <span>Append</span>
+              </label>
+              <button id="file-write-btn" type="button" class="secondary">Write file</button>
+            </article>
+
+            <article class="tool-card">
+              <h3>Run Command</h3>
+              <label for="command-input">Command</label>
+              <input id="command-input" type="text" placeholder="ls -la" />
+              <label for="command-cwd">Working directory (optional)</label>
+              <input id="command-cwd" type="text" placeholder="/path/to/workdir" />
+              <button id="command-btn" type="button" class="secondary">Run command</button>
+            </article>
+          </div>
+
+          <p class="hint">Local tools only execute when explicitly requested and after a confirmation prompt.</p>
+        </section>
+
+        <section class="menu-panel" id="panel-automation-trace" data-menu="automation" data-panel="automation-trace">
+          <h2>Function Trace</h2>
+          <pre id="trace"></pre>
+        </section>
+
+        <section class="menu-panel" id="panel-system-status" data-menu="system" data-panel="system-status">
+          <h2>Runtime</h2>
+          <p class="status" id="status">Initializing...</p>
+          <p class="chip" id="platform-chip"></p>
+          <p class="hint">Use the Automation menu for local file/command actions. Every action requires confirmation.</p>
+        </section>
+      </aside>
+
+      <section class="panel chat">
+        <header class="chat-header">
+          <div>
+            <p class="eyebrow">Conversation</p>
+            <h2 class="chat-title">AIFRED Assistant</h2>
+          </div>
+        </header>
+
+        <div id="messages" class="messages"></div>
+
+        <form id="composer" class="composer">
+          <textarea id="prompt" rows="4" placeholder="Message AIFRED"></textarea>
+          <button id="send" type="submit">Send</button>
+        </form>
+      </section>
+    </main>
+
+    <script src="./app.js"></script>
+  </body>
+</html>

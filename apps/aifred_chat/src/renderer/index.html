@@ -1,0 +1,256 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self' https://js.puter.com https://*.puter.com https://puter.com data: blob:; script-src 'self' 'unsafe-inline' https://js.puter.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; connect-src 'self' https://*.puter.com https://puter.com https://api.puter.com https://api.openai.com https://text.pollinations.ai http://localhost:* http://127.0.0.1:* https://localhost:* https://127.0.0.1:*; img-src 'self' data: https:; media-src 'self' data: blob:;"
+    />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AIFRED Desktop</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Exo+2:wght@500;600;700&family=Manrope:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="app-bg" aria-hidden="true"></div>
+
+    <main class="app-grid">
+      <aside class="controls-panel">
+        <div class="brand-block">
+          <div class="brand-hero">
+            <img
+              class="robot-mark"
+              src="./assets/aifred_logo_no_dawai_crop.png"
+              alt="AIFRED brand logo"
+            />
+            <div class="brand-copy">
+              <p class="eyebrow">AIFRED Neural Console</p>
+              <h1>AIFRED</h1>
+              <p class="subtle">Sleek desktop copilot with live web search, local tool calls, and OpenAI text-to-speech.</p>
+            </div>
+          </div>
+        </header>
+
+        <label class="control-label" for="chat-model">Chat model</label>
+        <select id="chat-model" class="control-input">
+          <option value="gpt-4o-mini">gpt-4o-mini</option>
+          <option value="gpt-4o">gpt-4o</option>
+          <option value="gpt-4.1-mini">gpt-4.1-mini</option>
+          <option value="gpt-4.1">gpt-4.1</option>
+        </select>
+        <button id="refresh-models-btn" class="secondary-btn" type="button">Refresh model list</button>
+
+        <label class="toggle-row">
+          <input type="checkbox" id="free-test-mode" checked disabled />
+          <span>Free test mode is enforced (no model credits charged)</span>
+        </label>
+
+        <nav class="sub-menus" id="sub-menus" aria-label="Submenu">
+          <button class="submenu-btn active" data-menu="assistant" data-panel="assistant-chat" type="button">Chat Settings</button>
+          <button class="submenu-btn" data-menu="assistant" data-panel="assistant-models" type="button">Models</button>
+
+        <label class="toggle-row">
+          <input type="checkbox" id="web-search" checked />
+          <span>Enable built-in web search</span>
+        </label>
+
+        <label class="toggle-row">
+          <input type="checkbox" id="adaptive-personality" checked />
+          <span>Adaptive personality</span>
+        </label>
+        <p id="personality-traits" class="subtle tiny-readout"></p>
+        <button id="reset-personality-btn" class="secondary-btn" type="button">Reset personality</button>
+
+        <label class="toggle-row">
+          <input type="checkbox" id="use-vault-context" checked />
+          <span>Use Memory Vault context</span>
+        </label>
+        <label class="control-label" for="vault-search">Search Vault</label>
+        <input id="vault-search" class="control-input" placeholder="filename, tag, summary" />
+        <div id="vault-results" class="vault-results"></div>
+
+        <label class="control-label">Import File (Android/Desktop)</label>
+        <button id="choose-files-btn" class="secondary-btn" type="button">Choose File(s)</button>
+        <input id="vault-file-input" type="file" multiple hidden />
+        <p id="vault-selected" class="subtle tiny-readout"></p>
+        <button id="ingest-vault-btn" class="secondary-btn" type="button">Ingest into Vault</button>
+
+        <label class="toggle-row">
+          <input type="checkbox" id="local-mode" />
+          <span>Local mode</span>
+        </label>
+        <label class="control-label" for="local-endpoint-url">Local endpoint URL</label>
+        <input id="local-endpoint-url" class="control-input" placeholder="http://127.0.0.1:11434/v1/chat/completions" />
+        <button id="test-local-endpoint-btn" class="secondary-btn" type="button">Test local endpoint</button>
+
+        <label class="toggle-row">
+          <input type="checkbox" id="prefer-local-private" checked />
+          <span>Prefer local for private data</span>
+        </label>
+
+        <label class="toggle-row">
+          <input type="checkbox" id="allow-cloud-private" />
+          <span>Allow cloud for private data</span>
+        </label>
+
+        <label class="toggle-row">
+          <input type="checkbox" id="legacy-mode" />
+          <span>Legacy / anonymous</span>
+        </label>
+
+          <button class="submenu-btn" data-menu="automation" data-panel="automation-tools" type="button">Local Tools</button>
+          <button class="submenu-btn" data-menu="automation" data-panel="automation-trace" type="button">Function Trace</button>
+
+          <button class="submenu-btn" data-menu="system" data-panel="system-status" type="button">Runtime</button>
+        </nav>
+
+        <button id="clear-btn" class="secondary-btn" type="button">Clear conversation</button>
+        <button id="export-profile-btn" class="secondary-btn" type="button">Export profile</button>
+        <button id="reset-profile-btn" class="secondary-btn" type="button">Reset profile</button>
+
+          <label class="row switch-row">
+            <input type="checkbox" id="stream" />
+            <span>Stream responses</span>
+          </label>
+
+          <label class="row switch-row">
+            <input type="checkbox" id="tool-calling" checked />
+            <span>Enable tool/function calling</span>
+          </label>
+
+          <label class="row switch-row">
+            <input type="checkbox" id="web-search" />
+            <span>Enable web-search response mode</span>
+          </label>
+
+          <p class="hint">Web-search mode keeps the selected model and uses retrieval-style prompting (no hard model switch).</p>
+
+          <label for="temperature">Temperature (0.0 - 1.0)</label>
+          <input id="temperature" type="number" min="0" max="1" step="0.1" value="0.7" />
+
+          <label for="max-tokens">Max tokens</label>
+          <input id="max-tokens" type="number" min="1" step="1" placeholder="Optional" />
+        </section>
+
+        <section class="menu-panel" id="panel-assistant-models" data-menu="assistant" data-panel="assistant-models">
+          <h2>Model Routing</h2>
+          <label for="chat-model">Chat model</label>
+          <select id="chat-model"></select>
+          <button id="refresh-models" type="button" class="secondary">Refresh model list</button>
+          <p class="hint" id="model-hint">Model details appear here.</p>
+        </section>
+
+        <section class="menu-panel" id="panel-media-tts" data-menu="media" data-panel="media-tts">
+          <h2>Text To Speech</h2>
+          <label for="tts-model">Voice</label>
+          <select id="tts-model"></select>
+          <label for="tts-input">Text</label>
+          <textarea id="tts-input" rows="3" placeholder="Text to convert to speech"></textarea>
+          <button id="tts-btn" type="button" class="secondary">Generate speech</button>
+          <div id="tts-output"></div>
+        </section>
+
+        <section class="menu-panel" id="panel-media-image" data-menu="media" data-panel="media-image">
+          <h2>Image Generation</h2>
+          <label for="image-model">Image model</label>
+          <select id="image-model"></select>
+          <label for="image-prompt">Prompt</label>
+          <textarea id="image-prompt" rows="3" placeholder="Describe your image"></textarea>
+          <button id="image-btn" type="button" class="secondary">Generate image</button>
+        </section>
+
+        <section class="menu-panel" id="panel-media-vision" data-menu="media" data-panel="media-vision">
+          <h2>Image Analysis</h2>
+          <label for="analyze-url">Image URL</label>
+          <input id="analyze-url" type="text" placeholder="https://..." />
+          <label for="analyze-prompt">Question</label>
+          <textarea id="analyze-prompt" rows="3" placeholder="What do you see in this image?"></textarea>
+          <button id="analyze-btn" type="button" class="secondary">Analyze image</button>
+        </section>
+
+        <section class="menu-panel" id="panel-automation-tools" data-menu="automation" data-panel="automation-tools">
+          <h2>Local Tools</h2>
+
+          <label class="row switch-row">
+            <input type="checkbox" id="local-ops" />
+            <span>Allow file/command tools (always prompt)</span>
+          </label>
+
+          <div class="tool-grid">
+            <article class="tool-card">
+              <h3>Read File</h3>
+              <label for="file-read-path">Path</label>
+              <input id="file-read-path" type="text" placeholder="/path/to/file.txt" />
+              <button id="file-read-btn" type="button" class="secondary">Read file</button>
+            </article>
+
+            <article class="tool-card">
+              <h3>Write File</h3>
+              <label for="file-write-path">Path</label>
+              <input id="file-write-path" type="text" placeholder="/path/to/file.txt" />
+              <label for="file-write-content">Content</label>
+              <textarea id="file-write-content" rows="4" placeholder="Text to write"></textarea>
+              <label class="row switch-row compact">
+                <input type="checkbox" id="file-write-append" />
+                <span>Append</span>
+              </label>
+              <button id="file-write-btn" type="button" class="secondary">Write file</button>
+            </article>
+
+            <article class="tool-card">
+              <h3>Run Command</h3>
+              <label for="command-input">Command</label>
+              <input id="command-input" type="text" placeholder="ls -la" />
+              <label for="command-cwd">Working directory (optional)</label>
+              <input id="command-cwd" type="text" placeholder="/path/to/workdir" />
+              <button id="command-btn" type="button" class="secondary">Run command</button>
+            </article>
+          </div>
+
+          <p class="hint">Local tools only execute when explicitly requested and after a confirmation prompt.</p>
+        </section>
+
+        <section class="menu-panel" id="panel-automation-trace" data-menu="automation" data-panel="automation-trace">
+          <h2>Function Trace</h2>
+          <pre id="trace"></pre>
+        </section>
+
+        <section class="menu-panel" id="panel-system-status" data-menu="system" data-panel="system-status">
+          <h2>Runtime</h2>
+          <p class="status" id="status">Initializing...</p>
+          <p class="chip" id="platform-chip"></p>
+          <p class="hint">Use the Automation menu for local file/command actions. Every action requires confirmation.</p>
+        </section>
+      </aside>
+
+      <section class="panel chat">
+        <header class="chat-header">
+          <div>
+            <p class="eyebrow">Conversation</p>
+            <h2 class="chat-title">AIFRED Assistant</h2>
+          </div>
+        </header>
+
+        <div id="messages" class="messages"></div>
+
+        <form id="composer" class="composer">
+          <textarea id="prompt" rows="4" placeholder="Message AIFRED"></textarea>
+          <button id="send" type="submit">Send</button>
+        </form>
+      </section>
+    </main>
+
+    <script src="https://js.puter.com/v2/"></script>
+    <script src="./cognition/personality.js"></script>
+    <script src="./cognition/intent.js"></script>
+    <script src="./cognition/profile_store.js"></script>
+    <script src="./cognition/router.js"></script>
+    <script src="./cognition/memory_score.js"></script>
+    <script src="./app.js"></script>
+  </body>
+</html>

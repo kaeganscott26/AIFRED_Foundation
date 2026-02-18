@@ -1,0 +1,7 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "AnalysisResult",
+  "description": "Phase 0 placeholder schema for analyzer output.",
+  "type": "object",
+  "additionalProperties": true
+}

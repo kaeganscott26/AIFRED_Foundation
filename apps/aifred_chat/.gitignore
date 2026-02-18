@@ -1,0 +1,6 @@
+node_modules/
+dist/*
+!dist/android/
+!dist/android/AIFRED-Mobile-debug.apk
+.DS_Store
+npm-debug.log*
