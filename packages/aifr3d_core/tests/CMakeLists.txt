@@ -73,3 +73,11 @@ add_executable(test_reference_compare
 target_link_libraries(test_reference_compare PRIVATE aifr3d_core)
 target_compile_features(test_reference_compare PRIVATE cxx_std_20)
 add_test(NAME aifr3d_core.test_reference_compare COMMAND test_reference_compare)
+
+add_executable(test_issues
+  test_issues.cpp
+)
+target_link_libraries(test_issues PRIVATE aifr3d_core)
+target_compile_features(test_issues PRIVATE cxx_std_20)
+add_test(NAME aifr3d_core.test_issues COMMAND test_issues)
+

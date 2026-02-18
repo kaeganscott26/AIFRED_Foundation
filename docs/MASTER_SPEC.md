@@ -23,3 +23,9 @@ This document is append-only. Existing sections are never deleted or rewritten i
 - Added per-reference metric deltas, aggregate reference means, and normalized block/overall closeness scores.
 - Added guardrails for empty reference sets and schema version compatibility checks.
 - Added synthetic-buffer test coverage for reference comparison behavior and repeatability.
+
+## 2026-02-18 — Phase 5 record
+- Added deterministic issue detection + fix list rule engine v1 in `packages/aifr3d_core`.
+- Added versioned rule thresholds/config and typed issue/evidence/fix-step outputs.
+- Implemented top-5 ranking based on severity, normalized distance, and deterministic confidence.
+- Added deterministic test coverage for issue triggering, evidence population, and repeat-run stability.

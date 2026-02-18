@@ -148,3 +148,41 @@
 - Block closeness is arithmetic mean of metric closeness values in that block.
 - Overall closeness is arithmetic mean of block closeness scores.
 - Fixed deterministic scales are used per block (implementation constants) and are version-controlled.
+
+## Phase 5 issue detection + fix list rule engine (v1)
+
+### Rule source and determinism
+- Issue detection is rule-based only and uses measured analysis metrics + optional benchmark/reference compare data.
+- No AI-generated values, no web calls, and no stochastic behavior.
+- Rule thresholds are versioned in core rule config (`v1`).
+
+### Rule set (v1 minimum)
+1. Loudness too hot/cold versus benchmark target.
+2. True peak risk (e.g., true peak above safety threshold).
+3. Low-end buildup (sub/low spectral elevation).
+4. Harsh mids (high-mid elevation).
+5. Dull top (high/air deficit).
+6. Stereo too wide/narrow (width/correlation behavior).
+7. Dynamics crushed/spiky (crest too low/high).
+
+### Severity mapping
+- Severity is discrete: `Info`, `Minor`, `Moderate`, `Severe`.
+- Mapping is deterministic from normalized distance-from-threshold (rule-specific).
+
+### Confidence meaning
+- `confidence_0_100` is deterministic, metric-evidence confidence (not model confidence).
+- Confidence increases with normalized distance and can be adjusted by supporting reference-direction agreement.
+
+### Ranking and top-N output
+- Each candidate issue is ranked deterministically using:
+  - `ranking_score = severity_weight * normalized_distance * (confidence_0_100 / 100)`
+- Engine returns top 5 issues ordered by descending ranking score with stable deterministic tie-break.
+
+### Evidence and fix template contract
+- Every issue must include evidence points with metric path and available factual fields (`value`, `target_mean`, `delta`, `z`, `in_range`).
+- Every issue emits deterministic fix steps that answer:
+  - why (problem evidence context)
+  - what (change category)
+  - when (workflow stage)
+  - how (action steps)
+  - recheck (expected metric movement and direction)
