@@ -2,8 +2,10 @@
 
 #include "aifr3d/analyzer.hpp"
 #include "aifr3d/compare.hpp"
+#include "aifr3d/reference_compare.hpp"
 
 #include <map>
+#include <optional>
 #include <string>
 #include <vector>
 
@@ -30,6 +32,7 @@ struct ScoreBreakdown {
 struct AnalysisReport {
   AnalysisResult analysis;
   BenchmarkCompareResult benchmark_compare;
+  std::optional<ReferenceCompareResult> reference_compare;
   ScoreBreakdown score;
 };
 

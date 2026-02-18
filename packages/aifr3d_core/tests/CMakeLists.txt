@@ -66,3 +66,10 @@ add_executable(test_scoring
 target_link_libraries(test_scoring PRIVATE aifr3d_core)
 target_compile_features(test_scoring PRIVATE cxx_std_20)
 add_test(NAME aifr3d_core.test_scoring COMMAND test_scoring)
+
+add_executable(test_reference_compare
+  test_reference_compare.cpp
+)
+target_link_libraries(test_reference_compare PRIVATE aifr3d_core)
+target_compile_features(test_reference_compare PRIVATE cxx_std_20)
+add_test(NAME aifr3d_core.test_reference_compare COMMAND test_reference_compare)

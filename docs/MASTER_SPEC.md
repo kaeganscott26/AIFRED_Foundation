@@ -17,3 +17,9 @@ This document is append-only. Existing sections are never deleted or rewritten i
 - Added strict benchmark profile schema and extended analysis result schema with optional benchmark compare and score output blocks.
 - Added derived-only benchmark fixture JSON under `data/benchmarks/` (no source audio content).
 - Added Phase 3 tests for benchmark loading, compare logic, and scoring determinism/monotonicity.
+
+## 2026-02-18 — Phase 4 record
+- Added deterministic user reference comparison support in `packages/aifr3d_core` via `compareToReferences`.
+- Added per-reference metric deltas, aggregate reference means, and normalized block/overall closeness scores.
+- Added guardrails for empty reference sets and schema version compatibility checks.
+- Added synthetic-buffer test coverage for reference comparison behavior and repeatability.

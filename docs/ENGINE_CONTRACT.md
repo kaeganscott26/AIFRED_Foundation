@@ -121,3 +121,30 @@
 
 ### Stability promise
 - For identical input analysis values + benchmark profile + scoring config version, compare/scoring outputs are deterministic and repeatable for the same build/toolchain.
+
+## Phase 4 user reference comparison
+
+### Inputs and compatibility
+- Reference compare consumes an already-produced `AnalysisResult` for the mix and 1..N reference `AnalysisResult` values.
+- Guardrails:
+  - empty reference list is invalid and must fail fast.
+  - schema compatibility rule (Phase 4): every reference must have the same `schema_version` as the mix.
+
+### Per-reference A/B deltas
+- For each metric and each reference index `i`:
+  - `delta_i = mix_metric - ref_i_metric`
+  - if either side is undefined (`null`), delta is undefined (`null`).
+
+### Aggregate reference mean
+- For each metric:
+  - `reference_mean = mean(all defined reference values)`
+  - if no reference has a defined value for the metric, aggregate is undefined.
+
+### Closeness scoring (deterministic)
+- Phase 4 defines block closeness scores in `[0,100]` from aggregate deltas.
+- For each metric with a defined aggregate delta:
+  - `normalized = abs(delta) / scale`
+  - `metric_closeness = 100 / (1 + normalized)`
+- Block closeness is arithmetic mean of metric closeness values in that block.
+- Overall closeness is arithmetic mean of block closeness scores.
+- Fixed deterministic scales are used per block (implementation constants) and are version-controlled.

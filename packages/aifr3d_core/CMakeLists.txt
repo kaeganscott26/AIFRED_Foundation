@@ -5,6 +5,7 @@ add_library(aifr3d_core STATIC
   src/dynamics.cpp
   src/fft.cpp
   src/loudness.cpp
+  src/reference_compare.cpp
   src/scoring.cpp
   src/spectral.cpp
   src/stereo.cpp
