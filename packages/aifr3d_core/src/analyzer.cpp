@@ -1,5 +1,11 @@
 #include "aifr3d/analyzer.hpp"
 
+#include "aifr3d/dynamics.hpp"
+#include "aifr3d/loudness.hpp"
+#include "aifr3d/spectral.hpp"
+#include "aifr3d/stereo.hpp"
+#include "aifr3d/true_peak.hpp"
+
 #include <cmath>
 #include <stdexcept>
 
@@ -57,6 +63,16 @@ AnalysisResult Analyzer::analyzeInterleavedStereo(const float* interleaved_stere
   } else {
     out.basic.crest_db = std::nullopt;
   }
+
+  out.loudness = compute_loudness_interleaved_stereo(interleaved_stereo, frame_count, sample_rate_hz);
+  out.true_peak = compute_true_peak_interleaved_stereo(interleaved_stereo, frame_count, 4);
+  out.spectral = compute_spectral_bands_interleaved_stereo(interleaved_stereo, frame_count, sample_rate_hz);
+  out.stereo = compute_stereo_metrics_interleaved_stereo(interleaved_stereo, frame_count);
+  out.dynamics = compute_dynamics_interleaved_stereo(interleaved_stereo, frame_count);
+
+  out.dynamics.peak_dbfs = out.basic.peak_dbfs;
+  out.dynamics.rms_dbfs = out.basic.rms_dbfs;
+  out.dynamics.crest_db = out.basic.crest_db;
 
   return out;
 }

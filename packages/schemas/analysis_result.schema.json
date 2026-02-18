@@ -1,7 +1,74 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "title": "AnalysisResult",
-  "description": "Phase 0 placeholder schema for analyzer output.",
+  "description": "Forward-compatible analysis result schema (Phase 2 expanded metrics).",
   "type": "object",
+  "properties": {
+    "schema_version": {
+      "oneOf": [{ "type": "integer" }, { "type": "string" }]
+    },
+    "analysis_id": { "type": ["string", "null"] },
+    "frame_count": { "type": "integer", "minimum": 0 },
+    "sample_rate_hz": { "type": "number", "exclusiveMinimum": 0 },
+    "generated_at_utc": { "type": "string" },
+    "basic": {
+      "type": "object",
+      "properties": {
+        "peak_dbfs": { "type": ["number", "null"] },
+        "rms_dbfs": { "type": ["number", "null"] },
+        "crest_db": { "type": ["number", "null"] }
+      },
+      "additionalProperties": true
+    },
+    "loudness": {
+      "type": "object",
+      "properties": {
+        "integrated_lufs": { "type": ["number", "null"] },
+        "short_term_lufs": { "type": ["number", "null"] },
+        "loudness_range_lu": { "type": ["number", "null"] }
+      },
+      "additionalProperties": true
+    },
+    "true_peak": {
+      "type": "object",
+      "properties": {
+        "true_peak_dbfs": { "type": ["number", "null"] },
+        "oversample_factor": { "type": "integer", "minimum": 1 }
+      },
+      "additionalProperties": true
+    },
+    "spectral": {
+      "type": "object",
+      "properties": {
+        "sub": { "type": ["number", "null"] },
+        "low": { "type": ["number", "null"] },
+        "lowmid": { "type": ["number", "null"] },
+        "mid": { "type": ["number", "null"] },
+        "highmid": { "type": ["number", "null"] },
+        "high": { "type": ["number", "null"] },
+        "air": { "type": ["number", "null"] }
+      },
+      "additionalProperties": true
+    },
+    "stereo": {
+      "type": "object",
+      "properties": {
+        "correlation": { "type": ["number", "null"] },
+        "lr_balance_db": { "type": ["number", "null"] },
+        "width_proxy": { "type": ["number", "null"] }
+      },
+      "additionalProperties": true
+    },
+    "dynamics": {
+      "type": "object",
+      "properties": {
+        "peak_dbfs": { "type": ["number", "null"] },
+        "rms_dbfs": { "type": ["number", "null"] },
+        "crest_db": { "type": ["number", "null"] },
+        "dr_proxy_db": { "type": ["number", "null"] }
+      },
+      "additionalProperties": true
+    }
+  },
   "additionalProperties": true
 }
