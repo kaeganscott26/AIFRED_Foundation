@@ -26,9 +26,10 @@ void Aifr3dAudioProcessor::prepareToPlay(double sampleRate, int) {
   ringBuffer_.clear();
   ringWritePos_ = 0;
   ringValidSamples_ = 0;
+  analysisService_.setRingCapacitySamples(static_cast<std::uint64_t>(ringCapacitySamples_));
 }
 
-void Aifr3dAudioProcessor::releaseResources() {}
+void Aifr3dAudioProcessor::releaseResources() { analysisService_.cancelPendingAndInFlight(); }
 
 void Aifr3dAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer, juce::MidiBuffer&) {
   juce::ScopedNoDenormals noDenormals;
@@ -96,6 +97,8 @@ void Aifr3dAudioProcessor::triggerAnalysisFromCapturedBuffer() {
 void Aifr3dAudioProcessor::triggerAnalysisFromFile(const juce::File& wavFile) {
   analysisService_.submitOfflineFile(wavFile, benchmarkProfilePath_, referenceWavPath_);
 }
+
+void Aifr3dAudioProcessor::cancelAnalysisJobs() { analysisService_.cancelPendingAndInFlight(); }
 
 juce::AudioProcessorValueTreeState::ParameterLayout Aifr3dAudioProcessor::createParameterLayout() {
   std::vector<std::unique_ptr<juce::RangedAudioParameter>> params;

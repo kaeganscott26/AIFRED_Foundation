@@ -53,6 +53,7 @@ target_link_libraries(aifr3d_vst3
 
 target_compile_definitions(aifr3d_vst3
   PUBLIC
+    AIFR3D_PROFILE_ANALYSIS=$<IF:$<CONFIG:Release>,0,1>
     JUCE_WEB_BROWSER=0
     JUCE_USE_CURL=0
 )

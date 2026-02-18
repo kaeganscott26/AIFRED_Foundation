@@ -1,0 +1,52 @@
+name: windows-beta-package
+
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - "v*"
+
+jobs:
+  build-and-package:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configure (VS2022 x64, VST3 ON)
+        shell: pwsh
+        run: |
+          cmake -S . -B build_win_vst3 -G "Visual Studio 17 2022" -A x64 -DAIFR3D_ENABLE_VST3=ON -DCMAKE_BUILD_TYPE=Release
+
+      - name: Build core tests + plugin
+        shell: pwsh
+        run: |
+          cmake --build build_win_vst3 --config Release --parallel
+
+      - name: Run core tests
+        shell: pwsh
+        run: |
+          ctest --test-dir build_win_vst3 --output-on-failure -C Release
+
+      - name: Install Inno Setup
+        shell: pwsh
+        run: |
+          choco install innosetup -y
+
+      - name: Build full installer zip
+        shell: pwsh
+        run: |
+          powershell -ExecutionPolicy Bypass -File dist/package_windows_full_install.ps1 -BuildDir build_win_vst3 -Version 1.0.0-beta
+
+      - name: Upload beta bundle artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: AIFR3D_v1.0.0-beta_Windows_FullInstall
+          path: dist/windows/out/AIFR3D_v1.0.0-beta_Windows_FullInstall.zip
+
+      - name: Publish GitHub release asset (tags only)
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            dist/windows/out/AIFR3D_v1.0.0-beta_Windows_FullInstall.zip

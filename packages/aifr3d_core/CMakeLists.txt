@@ -21,4 +21,13 @@ target_include_directories(aifr3d_core
 
 target_compile_features(aifr3d_core PUBLIC cxx_std_20)
 
+option(AIFR3D_BUILD_CORE_TOOLS "Build AIFR3D core CLI/tools" ON)
+if(AIFR3D_BUILD_CORE_TOOLS)
+  add_executable(aifr3d_core_cli
+    tools/analyze_wav.cpp
+  )
+  target_link_libraries(aifr3d_core_cli PRIVATE aifr3d_core)
+  target_compile_features(aifr3d_core_cli PRIVATE cxx_std_20)
+endif()
+
 add_subdirectory(tests)

@@ -171,6 +171,7 @@ Aifr3dAudioProcessorEditor::Aifr3dAudioProcessorEditor(Aifr3dAudioProcessor& pro
 
   analyzeBufferButton_.addListener(this);
   analyzeFileButton_.addListener(this);
+  cancelAnalysisButton_.addListener(this);
   exportButton_.addListener(this);
   pickBenchmarkButton_.addListener(this);
   pickReferenceButton_.addListener(this);
@@ -182,6 +183,7 @@ Aifr3dAudioProcessorEditor::Aifr3dAudioProcessorEditor(Aifr3dAudioProcessor& pro
 
   tabAifred_.addAndMakeVisible(analyzeBufferButton_);
   tabAifred_.addAndMakeVisible(analyzeFileButton_);
+  tabAifred_.addAndMakeVisible(cancelAnalysisButton_);
   tabAifred_.addAndMakeVisible(headerCard_);
 
   metricBarsLabel_.setJustificationType(juce::Justification::topLeft);
@@ -246,6 +248,7 @@ Aifr3dAudioProcessorEditor::Aifr3dAudioProcessorEditor(Aifr3dAudioProcessor& pro
 Aifr3dAudioProcessorEditor::~Aifr3dAudioProcessorEditor() {
   analyzeBufferButton_.removeListener(this);
   analyzeFileButton_.removeListener(this);
+  cancelAnalysisButton_.removeListener(this);
   exportButton_.removeListener(this);
   pickBenchmarkButton_.removeListener(this);
   pickReferenceButton_.removeListener(this);
@@ -275,6 +278,8 @@ void Aifr3dAudioProcessorEditor::resized() {
   analyzeBufferButton_.setBounds(btnRow.removeFromLeft(220));
   btnRow.removeFromLeft(8);
   analyzeFileButton_.setBounds(btnRow.removeFromLeft(200));
+  btnRow.removeFromLeft(8);
+  cancelAnalysisButton_.setBounds(btnRow.removeFromLeft(180));
 
   metricBarsLabel_.setBounds(tabAnalysis_.getLocalBounds().reduced(14));
   metricBarsComponent_->setBounds(metricBarsLabel_.getBounds().withTrimmedBottom(metricBarsLabel_.getHeight() / 2));
@@ -326,6 +331,11 @@ void Aifr3dAudioProcessorEditor::buttonClicked(juce::Button* button) {
     }
     return;
   }
+  if (button == &cancelAnalysisButton_) {
+    processor_.cancelAnalysisJobs();
+    statusLabel_.setText("Analysis cancel requested.", juce::dontSendNotification);
+    return;
+  }
   if (button == &exportButton_) {
     if (lastSnapshot_ == nullptr || !lastSnapshot_->valid) {
       reportStatusLabel_.setText("No valid analysis to export.", juce::dontSendNotification);
@@ -363,17 +373,33 @@ void Aifr3dAudioProcessorEditor::buttonClicked(juce::Button* button) {
 
 void Aifr3dAudioProcessorEditor::refreshFromSnapshot() {
   auto snapshot = processor_.latestSnapshot();
-  if (snapshot == nullptr || snapshot == lastSnapshot_) {
+  if (snapshot == nullptr) {
+    return;
+  }
+  if (snapshot == lastSnapshot_ || snapshot->generation == lastSeenGeneration_) {
     return;
   }
 
   lastSnapshot_ = snapshot;
+  lastSeenGeneration_ = snapshot->generation;
+
+  const auto perf = processor_.perfCounters();
   if (!snapshot->valid) {
-    statusLabel_.setText("Analysis failed: " + snapshot->errorMessage, juce::dontSendNotification);
+    if (snapshot->canceled) {
+      statusLabel_.setText("Analysis canceled (gen " + juce::String(static_cast<int>(snapshot->generation)) + ")",
+                           juce::dontSendNotification);
+    } else if (snapshot->timedOut) {
+      statusLabel_.setText("Analysis timed out", juce::dontSendNotification);
+    } else {
+      statusLabel_.setText("Analysis failed: " + snapshot->errorMessage, juce::dontSendNotification);
+    }
     return;
   }
 
-  statusLabel_.setText("Analysis ready", juce::dontSendNotification);
+  statusLabel_.setText("Analysis ready | ms=" + juce::String(snapshot->processingMs, 1) +
+                           " avg=" + juce::String(perf.avgJobMs, 1) +
+                           " dropped=" + juce::String(static_cast<int>(perf.droppedPendingJobs)),
+                       juce::dontSendNotification);
 
   const juce::String scoreText = snapshot->score.has_value()
                                      ? juce::String(snapshot->score->overall_0_100, 1)

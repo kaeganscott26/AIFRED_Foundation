@@ -4,6 +4,7 @@
 
 #include <JuceHeader.h>
 
+#include <cstdint>
 #include <memory>
 
 namespace aifr3d::plugin {
@@ -44,6 +45,7 @@ class Aifr3dAudioProcessorEditor final : public juce::AudioProcessorEditor,
 
   juce::TextButton analyzeBufferButton_{"Analyze Captured Buffer"};
   juce::TextButton analyzeFileButton_{"Analyze WAV File"};
+  juce::TextButton cancelAnalysisButton_{"Cancel Analysis"};
   juce::Label headerCard_;
 
   juce::Label metricBarsLabel_;
@@ -63,6 +65,7 @@ class Aifr3dAudioProcessorEditor final : public juce::AudioProcessorEditor,
   juce::TextButton pickReferenceButton_{"Pick User Ref WAV"};
 
   std::shared_ptr<const AnalysisSnapshot> lastSnapshot_;
+  std::uint64_t lastSeenGeneration_{0};
 
   std::unique_ptr<juce::AudioProcessorValueTreeState::ComboBoxAttachment> meterModeAttachment_;
 };

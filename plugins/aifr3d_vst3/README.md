@@ -1,12 +1,13 @@
-# aifr3d_vst3 (Phase 6)
+# aifr3d_vst3 (Phase 7)
 
-JUCE-based VST3 wrapper for AIFR3D core analysis.
+JUCE-based VST3 wrapper for AIFR3D core analysis, hardened for beta shipping.
 
 ## Scope
 - VST3 plugin shell only (no duplicated analysis algorithms).
 - Links against `packages/aifr3d_core`.
 - Pass-through audio path.
-- Async analysis (captured ring buffer + offline WAV).
+- Async analysis (captured ring buffer + offline WAV) with cancel/timeout guardrails.
+- Optional profiling counters in non-Release builds.
 - Tabs: AIFRED / Analysis / Compare / Report / Settings.
 - Session export to JSON + PNG charts under user Documents.
 
@@ -25,6 +26,50 @@ Expected bundle path pattern:
 
 ```text
 build_win_vst3/plugins/aifr3d_vst3/aifr3d_vst3_artefacts/Release/VST3/AIFR3D.vst3
+```
+
+## Beta packaging (single-step installer zip)
+
+Use GitHub Actions workflow **windows-beta-package** to build and publish:
+
+- `AIFR3D_v1.0.0-beta_Windows_FullInstall.zip`
+  - `AIFR3D_Installer_v1.0.0-beta.exe`
+  - install README + VERSION
+
+Local Windows packaging command:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File dist/package_windows_full_install.ps1 -BuildDir build_win_vst3 -Version 1.0.0-beta
+```
+
+Installer target default path:
+
+```text
+%COMMONPROGRAMFILES%\VST3\AIFR3D.vst3
+```
+
+## Stress/stability matrix (Phase 7)
+
+- Multiple instances loaded in one DAW project
+- Transport start/stop while analysis requests are queued
+- Sample rate changes (prepare/release cycle)
+- Large WAV offline analysis
+- Plugin reload after DAW restart
+
+Expected behavior:
+- UI remains responsive while analysis runs async
+- New requests supersede stale jobs
+- Cancel button cancels queued/in-flight jobs
+- Timeout returns explicit status (no UI hang)
+
+## TestKit
+
+Synthetic deterministic fixtures and expected output ranges:
+
+```bash
+python plugins/aifr3d_vst3/TestKit/tools/generate_test_wavs.py
+python plugins/aifr3d_vst3/TestKit/tools/run_testkit_analysis.py --build-dir build
+python plugins/aifr3d_vst3/TestKit/tools/verify_testkit_outputs.py
 ```
 
 ## FL Studio sanity checklist (manual)

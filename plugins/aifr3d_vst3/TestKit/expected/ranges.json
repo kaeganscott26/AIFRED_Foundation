@@ -1,0 +1,48 @@
+{
+  "silence.wav": {
+    "sample_rate_hz": 48000,
+    "frame_count_min": 47000,
+    "frame_count_max": 49000,
+    "expect_null": [
+      "basic.peak_dbfs",
+      "basic.rms_dbfs",
+      "basic.crest_db",
+      "loudness.integrated_lufs",
+      "true_peak.true_peak_dbfs"
+    ]
+  },
+  "sine_1khz.wav": {
+    "sample_rate_hz": 48000,
+    "ranges": {
+      "basic.peak_dbfs": [-7.5, -5.5],
+      "basic.rms_dbfs": [-10.8, -8.8],
+      "loudness.integrated_lufs": [-11.5, -8.0],
+      "true_peak.true_peak_dbfs": [-7.0, -5.0]
+    }
+  },
+  "dual_tone.wav": {
+    "sample_rate_hz": 48000,
+    "ranges": {
+      "basic.peak_dbfs": [-7.5, -4.0],
+      "loudness.integrated_lufs": [-12.0, -7.0],
+      "true_peak.true_peak_dbfs": [-7.0, -4.0]
+    }
+  },
+  "transient_train.wav": {
+    "sample_rate_hz": 48000,
+    "ranges": {
+      "basic.peak_dbfs": [-2.0, 0.0],
+      "dynamics.crest_db": [5.0, 40.0],
+      "true_peak.true_peak_dbfs": [-2.0, 0.5]
+    }
+  },
+  "noise_det.wav": {
+    "sample_rate_hz": 48000,
+    "ranges": {
+      "basic.peak_dbfs": [-16.0, -12.0],
+      "basic.rms_dbfs": [-30.0, -22.0],
+      "loudness.integrated_lufs": [-31.0, -22.0],
+      "stereo.correlation": [0.85, 1.0]
+    }
+  }
+}

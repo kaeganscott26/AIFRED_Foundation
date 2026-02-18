@@ -4,10 +4,18 @@ set -euo pipefail
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 APP_DIR="$ROOT_DIR/apps/aifred_chat"
 SRC_APP_DIR="/home/north3rnlight3r/Projects/Free_API"
+RUN_TESTKIT="${RUN_TESTKIT:-0}"
 
 cmake -S "$ROOT_DIR" -B "$ROOT_DIR/build" -DCMAKE_BUILD_TYPE=Release
 cmake --build "$ROOT_DIR/build" --parallel
 ctest --test-dir "$ROOT_DIR/build" --output-on-failure
+
+if [[ "$RUN_TESTKIT" == "1" ]]; then
+  echo "[INFO] Running Phase 7 TestKit generation + verification"
+  python "$ROOT_DIR/plugins/aifr3d_vst3/TestKit/tools/generate_test_wavs.py"
+  python "$ROOT_DIR/plugins/aifr3d_vst3/TestKit/tools/run_testkit_analysis.py" --build-dir build
+  python "$ROOT_DIR/plugins/aifr3d_vst3/TestKit/tools/verify_testkit_outputs.py"
+fi
 
 if [[ -f "$APP_DIR/package.json" ]]; then
   if command -v node >/dev/null 2>&1; then

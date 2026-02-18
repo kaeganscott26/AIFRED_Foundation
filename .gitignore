@@ -1,1 +1,5 @@
 build/
+build_*/
+dist/windows/out/
+dist/windows/staging/
+plugins/aifr3d_vst3/TestKit/out/

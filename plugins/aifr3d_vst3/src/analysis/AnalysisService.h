@@ -18,6 +18,10 @@ class AnalysisService final : private juce::Thread {
   AnalysisService();
   ~AnalysisService() override;
 
+  struct Config {
+    int timeoutMs{8000};
+  };
+
   void start();
   void stop();
 
@@ -31,7 +35,11 @@ class AnalysisService final : private juce::Thread {
                          juce::String benchmarkProfilePath,
                          juce::String referenceWavPath);
 
+  void cancelPendingAndInFlight();
+  void setRingCapacitySamples(std::uint64_t samples);
+
   std::shared_ptr<const AnalysisSnapshot> latestSnapshot() const;
+  AnalysisPerfCounters perfCounters() const;
 
  private:
   void run() override;
@@ -44,11 +52,17 @@ class AnalysisService final : private juce::Thread {
 
   static std::vector<float> interleaveStereo(const juce::AudioBuffer<float>& buf);
 
+  Config config_;
   mutable std::mutex jobMutex_;
   AnalysisJob pendingJob_;
   bool hasPendingJob_{false};
 
   std::atomic<std::uint64_t> generation_{0};
+  std::atomic<std::uint64_t> latestRequestedGeneration_{0};
+
+  mutable std::mutex perfMutex_;
+  AnalysisPerfCounters perf_;
+
   std::shared_ptr<AnalysisSnapshot> latestSnapshot_;
   mutable std::mutex latestMutex_;
 };

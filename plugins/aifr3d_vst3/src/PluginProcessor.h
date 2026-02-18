@@ -53,9 +53,11 @@ class Aifr3dAudioProcessor final : public juce::AudioProcessor {
   [[nodiscard]] std::shared_ptr<const AnalysisSnapshot> latestSnapshot() const {
     return analysisService_.latestSnapshot();
   }
+  [[nodiscard]] AnalysisPerfCounters perfCounters() const { return analysisService_.perfCounters(); }
 
   void triggerAnalysisFromCapturedBuffer();
   void triggerAnalysisFromFile(const juce::File& wavFile);
+  void cancelAnalysisJobs();
 
  private:
   static juce::AudioProcessorValueTreeState::ParameterLayout createParameterLayout();

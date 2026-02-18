@@ -7,9 +7,20 @@
 #include "aifr3d/reference_compare.hpp"
 #include "aifr3d/scoring.hpp"
 
+#include <chrono>
 #include <utility>
 
 namespace aifr3d::plugin {
+
+namespace {
+
+#if !defined(AIFR3D_PROFILE_ANALYSIS)
+#define AIFR3D_PROFILE_ANALYSIS 0
+#endif
+
+using Clock = std::chrono::steady_clock;
+
+}  // namespace
 
 AnalysisService::AnalysisService() : juce::Thread("AIFR3DAnalysisWorker") {}
 
@@ -30,6 +41,7 @@ void AnalysisService::submitCapturedBuffer(const juce::AudioBuffer<float>& stere
                                            juce::String referenceWavPath) {
   AnalysisJob j;
   j.generation = ++generation_;
+  latestRequestedGeneration_.store(j.generation);
   j.sourceKind = AnalysisSourceKind::CapturedBuffer;
   j.trackName = trackName;
   j.stereoBuffer.makeCopyOf(stereoBuffer);
@@ -39,9 +51,19 @@ void AnalysisService::submitCapturedBuffer(const juce::AudioBuffer<float>& stere
 
   {
     const std::scoped_lock lock(jobMutex_);
+    if (hasPendingJob_) {
+      const std::scoped_lock perfLock(perfMutex_);
+      ++perf_.droppedPendingJobs;
+    }
     pendingJob_ = std::move(j);
     hasPendingJob_ = true;
   }
+
+  {
+    const std::scoped_lock perfLock(perfMutex_);
+    ++perf_.submittedJobs;
+  }
+
   notify();
 }
 
@@ -50,6 +72,7 @@ void AnalysisService::submitOfflineFile(const juce::File& wavFile,
                                         juce::String referenceWavPath) {
   AnalysisJob j;
   j.generation = ++generation_;
+  latestRequestedGeneration_.store(j.generation);
   j.sourceKind = AnalysisSourceKind::OfflineWav;
   j.trackName = wavFile.getFileNameWithoutExtension();
   j.offlineFile = wavFile;
@@ -58,15 +81,43 @@ void AnalysisService::submitOfflineFile(const juce::File& wavFile,
 
   {
     const std::scoped_lock lock(jobMutex_);
+    if (hasPendingJob_) {
+      const std::scoped_lock perfLock(perfMutex_);
+      ++perf_.droppedPendingJobs;
+    }
     pendingJob_ = std::move(j);
     hasPendingJob_ = true;
   }
+
+  {
+    const std::scoped_lock perfLock(perfMutex_);
+    ++perf_.submittedJobs;
+  }
+
   notify();
+}
+
+void AnalysisService::cancelPendingAndInFlight() {
+  latestRequestedGeneration_.store(generation_.load() + 1U);
+  {
+    const std::scoped_lock lock(jobMutex_);
+    hasPendingJob_ = false;
+  }
+}
+
+void AnalysisService::setRingCapacitySamples(std::uint64_t samples) {
+  const std::scoped_lock lock(perfMutex_);
+  perf_.ringCapacitySamples = samples;
 }
 
 std::shared_ptr<const AnalysisSnapshot> AnalysisService::latestSnapshot() const {
   const std::scoped_lock lock(latestMutex_);
   return latestSnapshot_;
+}
+
+AnalysisPerfCounters AnalysisService::perfCounters() const {
+  const std::scoped_lock lock(perfMutex_);
+  return perf_;
 }
 
 void AnalysisService::run() {
@@ -95,10 +146,21 @@ void AnalysisService::run() {
 }
 
 AnalysisSnapshot AnalysisService::runJob(const AnalysisJob& job) {
+  const auto start = Clock::now();
   AnalysisSnapshot out;
   out.completedAt = juce::Time::getCurrentTime();
   out.trackName = job.trackName;
   out.sourceLabel = (job.sourceKind == AnalysisSourceKind::OfflineWav) ? "offline_wav" : "captured_buffer";
+  out.generation = job.generation;
+
+  if (job.generation < latestRequestedGeneration_.load()) {
+    out.valid = false;
+    out.canceled = true;
+    out.errorMessage = "Analysis canceled by newer request.";
+    const std::scoped_lock perfLock(perfMutex_);
+    ++perf_.canceledJobs;
+    return out;
+  }
 
   try {
     juce::AudioBuffer<float> stereo;
@@ -115,6 +177,15 @@ AnalysisSnapshot AnalysisService::runJob(const AnalysisJob& job) {
       stereo.makeCopyOf(job.stereoBuffer);
     }
 
+    if (job.generation < latestRequestedGeneration_.load()) {
+      out.valid = false;
+      out.canceled = true;
+      out.errorMessage = "Analysis canceled during data prep.";
+      const std::scoped_lock perfLock(perfMutex_);
+      ++perf_.canceledJobs;
+      return out;
+    }
+
     if (stereo.getNumChannels() < 2 || stereo.getNumSamples() <= 0) {
       out.valid = false;
       out.errorMessage = "No valid stereo samples available for analysis.";
@@ -123,6 +194,16 @@ AnalysisSnapshot AnalysisService::runJob(const AnalysisJob& job) {
 
     const auto interleaved = interleaveStereo(stereo);
     const std::size_t frameCount = static_cast<std::size_t>(stereo.getNumSamples());
+
+    const auto nowMs = std::chrono::duration_cast<std::chrono::milliseconds>(Clock::now() - start).count();
+    if (nowMs > config_.timeoutMs) {
+      out.valid = false;
+      out.timedOut = true;
+      out.errorMessage = "Analysis timed out before core analysis.";
+      const std::scoped_lock perfLock(perfMutex_);
+      ++perf_.timedOutJobs;
+      return out;
+    }
 
     aifr3d::Analyzer analyzer;
     auto analysis = analyzer.analyzeInterleavedStereo(interleaved.data(), frameCount, sampleRate);
@@ -163,6 +244,15 @@ AnalysisSnapshot AnalysisService::runJob(const AnalysisJob& job) {
       }
     }
 
+    if (job.generation < latestRequestedGeneration_.load()) {
+      out.valid = false;
+      out.canceled = true;
+      out.errorMessage = "Analysis canceled by newer request.";
+      const std::scoped_lock perfLock(perfMutex_);
+      ++perf_.canceledJobs;
+      return out;
+    }
+
     const aifr3d::BenchmarkCompareResult* benchPtr =
         out.benchmarkCompare.has_value() ? &(*out.benchmarkCompare) : nullptr;
     const aifr3d::ReferenceCompareResult* refPtr =
@@ -174,6 +264,34 @@ AnalysisSnapshot AnalysisService::runJob(const AnalysisJob& job) {
     out.valid = false;
     out.errorMessage = e.what();
   }
+
+  out.processingMs =
+      static_cast<double>(std::chrono::duration_cast<std::chrono::milliseconds>(Clock::now() - start).count());
+
+  if (out.processingMs > static_cast<double>(config_.timeoutMs) && out.valid) {
+    out.valid = false;
+    out.timedOut = true;
+    out.errorMessage = "Analysis timed out.";
+    const std::scoped_lock perfLock(perfMutex_);
+    ++perf_.timedOutJobs;
+    return out;
+  }
+
+  {
+    const std::scoped_lock perfLock(perfMutex_);
+    if (out.valid) {
+      ++perf_.completedJobs;
+    }
+    perf_.lastJobMs = out.processingMs;
+    const auto n = static_cast<double>(juce::jmax<std::uint64_t>(1, perf_.completedJobs));
+    perf_.avgJobMs = ((perf_.avgJobMs * (n - 1.0)) + out.processingMs) / n;
+  }
+
+#if AIFR3D_PROFILE_ANALYSIS
+  juce::Logger::writeToLog("[AIFR3D] Analysis job " + juce::String(job.generation) +
+                           " completed: valid=" + juce::String(out.valid ? 1 : 0) +
+                           " ms=" + juce::String(out.processingMs, 2));
+#endif
 
   return out;
 }

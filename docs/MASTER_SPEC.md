@@ -29,3 +29,10 @@ This document is append-only. Existing sections are never deleted or rewritten i
 - Added versioned rule thresholds/config and typed issue/evidence/fix-step outputs.
 - Implemented top-5 ranking based on severity, normalized distance, and deterministic confidence.
 - Added deterministic test coverage for issue triggering, evidence population, and repeat-run stability.
+
+## 2026-02-18 — Phase 7 record
+- Hardened VST3 async analysis path for beta shipping: cancellation, stale-job supersession, timeout handling, and UI-safe status propagation.
+- Added optional non-Release profiling counters and explicit bounded-memory ring buffer telemetry.
+- Introduced beta packaging workflow for Windows full-install artifact (`AIFR3D_v1.0.0-beta_Windows_FullInstall.zip`) with one-click installer flow.
+- Added version record file (`VERSION = 1.0.0-beta`) and install documentation under `dist/README_install.md`.
+- Added deterministic TestKit (synthetic WAV generation, analysis run script, output range verification).
