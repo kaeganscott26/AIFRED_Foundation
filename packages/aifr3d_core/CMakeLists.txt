@@ -1,5 +1,5 @@
 add_library(aifr3d_core STATIC
-  src/placeholder.cpp
+  src/analyzer.cpp
 )
 
 target_include_directories(aifr3d_core
