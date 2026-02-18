@@ -36,3 +36,9 @@ This document is append-only. Existing sections are never deleted or rewritten i
 - Introduced beta packaging workflow for Windows full-install artifact (`AIFR3D_v1.0.0-beta_Windows_FullInstall.zip`) with one-click installer flow.
 - Added version record file (`VERSION = 1.0.0-beta`) and install documentation under `dist/README_install.md`.
 - Added deterministic TestKit (synthetic WAV generation, analysis run script, output range verification).
+
+## 2026-02-18 — Phase 8 record
+- Added `apps/dawai_desktop` executable stub (`dawai_desktop_stub`) linked to shared `aifr3d_core`.
+- Implemented session bundle loader flow for exported JSON (`analysis.json`, `issues.json`) with lightweight required-field checks.
+- Implemented optional offline WAV analysis path using `aifr3d::Analyzer` to prove shared core reuse outside plugin runtime.
+- Kept implementation intentionally lightweight (CLI-style dashboard) with no JUCE/plugin hosting and no full DAW behavior.
