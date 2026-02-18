@@ -45,3 +45,24 @@ add_executable(test_dynamics
 target_link_libraries(test_dynamics PRIVATE aifr3d_core)
 target_compile_features(test_dynamics PRIVATE cxx_std_20)
 add_test(NAME aifr3d_core.test_dynamics COMMAND test_dynamics)
+
+add_executable(test_benchmark_load
+  test_benchmark_load.cpp
+)
+target_link_libraries(test_benchmark_load PRIVATE aifr3d_core)
+target_compile_features(test_benchmark_load PRIVATE cxx_std_20)
+add_test(NAME aifr3d_core.test_benchmark_load COMMAND test_benchmark_load)
+
+add_executable(test_compare
+  test_compare.cpp
+)
+target_link_libraries(test_compare PRIVATE aifr3d_core)
+target_compile_features(test_compare PRIVATE cxx_std_20)
+add_test(NAME aifr3d_core.test_compare COMMAND test_compare)
+
+add_executable(test_scoring
+  test_scoring.cpp
+)
+target_link_libraries(test_scoring PRIVATE aifr3d_core)
+target_compile_features(test_scoring PRIVATE cxx_std_20)
+add_test(NAME aifr3d_core.test_scoring COMMAND test_scoring)

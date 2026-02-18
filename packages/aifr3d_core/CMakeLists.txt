@@ -1,8 +1,11 @@
 add_library(aifr3d_core STATIC
   src/analyzer.cpp
+  src/benchmark_profile.cpp
+  src/compare.cpp
   src/dynamics.cpp
   src/fft.cpp
   src/loudness.cpp
+  src/scoring.cpp
   src/spectral.cpp
   src/stereo.cpp
   src/true_peak.cpp

@@ -81,3 +81,43 @@
 ## Tolerances
 - Peak/RMS/Crest comparisons in tests use strict absolute tolerances appropriate for `float` accumulation paths.
 - Tolerance values must be explicitly declared in tests and documents to preserve determinism expectations.
+
+## Phase 3 benchmark comparison and scoring
+
+### Benchmark profile contract
+- Benchmark profiles are derived-metrics metadata only; no copyrighted audio is stored or required.
+- Profile fields:
+  - `schema_version`, `genre`, `profile_id`, `created_at_utc`, `track_count`, optional `source_notes`.
+  - `metrics` grouped by analysis blocks (`basic`, `loudness`, `spectral`, `stereo`, `dynamics`).
+- Per-metric target model:
+  - required `mean`
+  - optional `stddev`
+  - optional `target_min`, `target_max`
+
+### Delta and z-score rules
+- For each available metric:
+  - `delta = value - mean`
+  - `z = delta / stddev` when `stddev` exists and `stddev > eps`
+- Classification precedence:
+  1. If `[target_min, target_max]` exists: range check is primary.
+  2. Otherwise use z-thresholds:
+     - `|z| < 1.0` => `IN_RANGE`
+     - `|z| < 2.0` => `SLIGHTLY_OFF`
+     - otherwise => `NEEDS_ATTENTION`
+  3. Missing value/target => `UNKNOWN`.
+
+### Scoring v1 (deterministic)
+- Category subscores (0..100):
+  - `loudness`, `dynamics`, `tonal_balance`, `stereo`
+- Overall score:
+  - weighted average of category subscores
+  - default weights:
+    - loudness: 0.30
+    - dynamics: 0.25
+    - tonal_balance: 0.25
+    - stereo: 0.20
+- Penalty mapping for individual metrics is deterministic and versioned (v1), based on classification and optional z-magnitude.
+- Output includes transparent `ScoreBreakdown` with `overall_0_100`, per-category `subscores`, `weights`, and deterministic notes.
+
+### Stability promise
+- For identical input analysis values + benchmark profile + scoring config version, compare/scoring outputs are deterministic and repeatable for the same build/toolchain.

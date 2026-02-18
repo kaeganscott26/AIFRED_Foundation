@@ -1,0 +1,40 @@
+{
+  "schema_version": "0.3.0",
+  "genre": "pop",
+  "profile_id": "test_pop_v1",
+  "created_at_utc": "2026-02-18T00:00:00Z",
+  "track_count": 32,
+  "source_notes": "Derived dummy profile for deterministic Phase 3 tests (no audio content).",
+  "metrics": {
+    "basic": {
+      "peak_dbfs": { "mean": -1.2, "stddev": 0.8, "target_min": -3.0, "target_max": -0.2 },
+      "rms_dbfs": { "mean": -10.0, "stddev": 1.0, "target_min": -12.0, "target_max": -8.0 },
+      "crest_db": { "mean": 8.8, "stddev": 1.0, "target_min": 6.5, "target_max": 10.5 }
+    },
+    "loudness": {
+      "integrated_lufs": { "mean": -10.5, "stddev": 1.2, "target_min": -12.0, "target_max": -9.0 },
+      "short_term_lufs": { "mean": -9.5, "stddev": 1.3, "target_min": -11.5, "target_max": -8.0 },
+      "loudness_range_lu": { "mean": 2.0, "stddev": 0.7, "target_min": 1.0, "target_max": 3.5 }
+    },
+    "spectral": {
+      "sub": { "mean": -24.0, "stddev": 3.0 },
+      "low": { "mean": -20.0, "stddev": 3.0 },
+      "lowmid": { "mean": -18.0, "stddev": 2.5 },
+      "mid": { "mean": -16.0, "stddev": 2.5 },
+      "highmid": { "mean": -17.0, "stddev": 2.5 },
+      "high": { "mean": -19.0, "stddev": 2.5 },
+      "air": { "mean": -22.0, "stddev": 3.0 }
+    },
+    "stereo": {
+      "correlation": { "mean": 0.55, "stddev": 0.20, "target_min": 0.15, "target_max": 0.90 },
+      "lr_balance_db": { "mean": 0.0, "stddev": 0.6, "target_min": -1.2, "target_max": 1.2 },
+      "width_proxy": { "mean": 0.30, "stddev": 0.12, "target_min": 0.10, "target_max": 0.55 }
+    },
+    "dynamics": {
+      "peak_dbfs": { "mean": -1.2, "stddev": 0.8, "target_min": -3.0, "target_max": -0.2 },
+      "rms_dbfs": { "mean": -10.0, "stddev": 1.0, "target_min": -12.0, "target_max": -8.0 },
+      "crest_db": { "mean": 8.8, "stddev": 1.0, "target_min": 6.5, "target_max": 10.5 },
+      "dr_proxy_db": { "mean": 9.0, "stddev": 1.8, "target_min": 6.0, "target_max": 12.0 }
+    }
+  }
+}

@@ -1,7 +1,54 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "title": "BenchmarkProfile",
-  "description": "Phase 0 stub only.",
+  "description": "Phase 3 benchmark profile contract for deterministic comparison/scoring.",
   "type": "object",
-  "additionalProperties": true
+  "required": [
+    "schema_version",
+    "genre",
+    "profile_id",
+    "created_at_utc",
+    "track_count",
+    "metrics"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+\\.\\d+$"
+    },
+    "genre": { "type": "string" },
+    "profile_id": { "type": "string" },
+    "created_at_utc": { "type": "string" },
+    "track_count": { "type": "integer", "minimum": 1 },
+    "source_notes": { "type": "string" },
+    "metrics": {
+      "type": "object",
+      "properties": {
+        "basic": { "$ref": "#/$defs/metricGroup" },
+        "loudness": { "$ref": "#/$defs/metricGroup" },
+        "spectral": { "$ref": "#/$defs/metricGroup" },
+        "stereo": { "$ref": "#/$defs/metricGroup" },
+        "dynamics": { "$ref": "#/$defs/metricGroup" }
+      },
+      "additionalProperties": false
+    }
+  },
+  "$defs": {
+    "metricTarget": {
+      "type": "object",
+      "required": ["mean"],
+      "properties": {
+        "mean": { "type": "number" },
+        "stddev": { "type": "number", "exclusiveMinimum": 0 },
+        "target_min": { "type": "number" },
+        "target_max": { "type": "number" }
+      },
+      "additionalProperties": false
+    },
+    "metricGroup": {
+      "type": "object",
+      "additionalProperties": { "$ref": "#/$defs/metricTarget" }
+    }
+  },
+  "additionalProperties": false
 }
