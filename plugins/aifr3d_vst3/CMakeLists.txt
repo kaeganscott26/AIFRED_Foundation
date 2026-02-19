@@ -13,6 +13,7 @@ FetchContent_MakeAvailable(juce)
 juce_add_plugin(aifr3d_vst3
   COMPANY_NAME "AIFR3D"
   BUNDLE_ID com.aifr3d.vst3
+  VERSION "1.0.0"
   IS_SYNTH FALSE
   NEEDS_MIDI_INPUT FALSE
   NEEDS_MIDI_OUTPUT FALSE
