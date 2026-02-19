@@ -6,7 +6,9 @@
 #include "aifr3d/reference_compare.hpp"
 #include "aifr3d/scoring.hpp"
 
-#include <JuceHeader.h>
+#include <juce_audio_processors/juce_audio_processors.h>
+#include <juce_dsp/juce_dsp.h>
+#include <juce_gui_extra/juce_gui_extra.h>
 
 #include <cstdint>
 #include <optional>
